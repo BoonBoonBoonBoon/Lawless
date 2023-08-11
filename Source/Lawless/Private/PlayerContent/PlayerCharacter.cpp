@@ -30,28 +30,33 @@ APlayerCharacter::APlayerCharacter()
 	FVector SpringLoc (20.f, 0.f, 80.f);
 	FPSpringArmComponent->SetWorldLocation(SpringLoc);
 	
+	IdleTracker = 2;
 	
 }
 
 void APlayerCharacter::Idle(bool NotMoving)
 {
-	// Change for when firing weapon.
-
-	CallTracker = 1.5;
-	
-	// Sets Spring Location
+	// Sets the Spring's Locations
 	FVector SpringLoc (20.f, 0.f, 80.f);
 	FVector SpringLoc_New (20.f, 0.f, 65.f);
 	
+	// For the first the function is called.
 	
-	if(CallTracker != 0)
+	
+	if (IdleTracker > 1)
 	{
-		GetWorld()->GetTimerManager().SetTimer(IdleBob, this, &APlayerCharacter::IdleManager, 1, true);
-		FPSpringArmComponent->SetWorldLocation(SpringLoc_New);
+		return;
+	} else {
+		
+		if(IdleTracker != 0)
+		{
+			GetWorld()->GetTimerManager().SetTimer(IdleBob, this, &APlayerCharacter::IdleManager, 1, true);
+			FPSpringArmComponent->SetWorldLocation(SpringLoc_New);
 		
 		} else {
 
 		}
+	}
 }
 
 
@@ -61,7 +66,7 @@ void APlayerCharacter::MoveForward(float value)
 	{
 		AddMovementInput(GetActorForwardVector(), value);
 	}
-}-
+}
 
 void APlayerCharacter::MoveSide(float value)
 {
@@ -123,6 +128,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Limits Player's Viewport Pitch. 
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (PlayerController->PlayerCameraManager)
@@ -138,7 +144,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Checks Parameters to see if they need updating.
+	// Check's for specific requirements every Tick.
 	CheckMovementBooleans(bIsWalking, bIsSprinting, bIsCrouching);
 
 	
@@ -163,7 +169,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::Crouch);
 
 	PlayerInputComponent->BindAction("Interact / Pickup", IE_Pressed, this, &APlayerCharacter::Interact);
-	// 
 	
 }
 

@@ -25,7 +25,7 @@ public:
 	// Movement Functions
 	void Idle(bool NotMoving);
 	// Manages the timer idle
-	FORCEINLINE void IdleManager(){ CallTracker--;};
+	FORCEINLINE void IdleManager(){ IdleTracker--;};
 	
 	void MoveForward(float value);
 	void MoveSide(float Value);
@@ -59,6 +59,6 @@ public:
 
 	// Head Bob for Idle animation
 	FTimerHandle IdleBob;
-	int32 CallTracker = 0;
+	int32 IdleTracker = 0;
 	
 };
