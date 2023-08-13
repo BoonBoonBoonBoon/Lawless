@@ -15,6 +15,15 @@ public:
 	// Sets default values for this actor's properties
 	ABase_RangedWeapon();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=SkeletalMesh)
+	class USkeletalMeshComponent* SkeletalMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=StaticMesh)
+	class UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Collision)
+	class USphereComponent* Collision;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

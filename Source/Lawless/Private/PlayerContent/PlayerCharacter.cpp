@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Lawless/Public/WeaponContent/Base_RangedWeapon.h"
 
 FString& printf(const wchar_t* Str, const FString& String);
 // Sets default values
@@ -62,9 +63,16 @@ void APlayerCharacter::Idle(bool NotMoving)
 
 void APlayerCharacter::MoveForward(float value)
 {
+	CheckMovementBooleans(true,NULL,NULL);
+	
 	if (value != 0)
 	{
 		AddMovementInput(GetActorForwardVector(), value);
+		if(bIsSprinting)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Sprinting"));
+			AddMovementInput(GetActorForwardVector(), value + 500.f);
+		} else {return;}
 	}
 }
 
@@ -80,24 +88,19 @@ void APlayerCharacter::Sprint()
 	{
 	// Call check movement, ignore other booleans as they are not relevant. Set the Sprinting boolean to true.  
 	CheckMovementBooleans(NULL, true, NULL);
+	UE_LOG(LogTemp, Warning, TEXT("Sprint Function"));
+}
+
+void APlayerCharacter::Run(float Value)
+{
 	
-	//  
-	bool bActived = true;
+	AddMovementInput(GetActorForwardVector(), Value + 500.f);
 	
-	if(bActived)
-	{
-		bIsSprinting = true;
-		UE_LOG(LogTemp, Warning, TEXT("Sprinting"));
-	} else
-	{
-		bIsSprinting = false;
-		UE_LOG(LogTemp, Warning, TEXT("Not Sprinting"));
-	}
 }
 
 void APlayerCharacter::Crouch() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Crouching"));
+	
 	if(bIsCrouching)
 	{
 		//capsule height half
@@ -106,17 +109,48 @@ void APlayerCharacter::Crouch()
 
 void APlayerCharacter::CheckMovementBooleans(bool CheckWalk, bool CheckRun, bool CheckCrouch)
 {
-
+	
 	// Check if all movement is false
-	if(CheckWalk && CheckRun && CheckCrouch == false)
+	if(!CheckWalk && !CheckRun && !CheckCrouch)
 	{
 		// check if the character vectors are not moving 
 		///*if((MoveForward(0.f)) && (MoveSide(0.f)))
 		
 		Idle(true);
 	}
+
+	if(CheckWalk && CheckRun && !CheckCrouch)
+	{
+		bIsSprinting = true;
+		UE_LOG(LogTemp, Warning, TEXT("Sprint true"));
+	}else
+	{
+		bIsSprinting = false;
+		
+	}
 }
 
+ 
+void APlayerCharacter::Trace()
+{
+/** Optimise later maybe try a inline function to only be used for tick idk  **/
+	FCollisionQueryParams TraceParams;
+	FHitResult FHit;
+	
+	FVector TraceStart = FPCameraComponent->GetComponentLocation();
+	FVector ForwardVector = FPCameraComponent->GetForwardVector();
+	FVector TraceEnd((ForwardVector * 400.f) + TraceStart);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(FHit, TraceStart, TraceEnd, ECC_Visibility, TraceParams);
+	if (bHit)
+	{
+		DrawDebugSphere(GetWorld(), FHit.ImpactPoint, 5, 1, FColor::Red, false, 0.01, 0, 4);
+		if(FHit.bBlockingHit)
+		{
+			
+		}
+	} 
+}
 
 void APlayerCharacter::Interact()
 {
@@ -146,7 +180,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	// Check's for specific requirements every Tick.
 	CheckMovementBooleans(bIsWalking, bIsSprinting, bIsCrouching);
-
+	Trace();
 	
 }
 
@@ -158,11 +192,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Movement Input
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveSide", this, &APlayerCharacter::MoveSide);
+
+	PlayerInputComponent->BindAxis("Run", this, &APlayerCharacter::Run);
+	
 	
 	// Mouse Input
 	PlayerInputComponent->BindAxis("Look Down / Look Up", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Look RIght / Look Left", this, &APawn::AddControllerYawInput);
 
+	
+	
 	//Action Input
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::Sprint);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);

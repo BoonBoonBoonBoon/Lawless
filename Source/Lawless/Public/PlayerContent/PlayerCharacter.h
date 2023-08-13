@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WeaponContent/Base_RangedWeapon.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -30,6 +31,9 @@ public:
 	void MoveForward(float value);
 	void MoveSide(float Value);
 	void Sprint();
+
+	void Run(float Value);
+	
 	void Crouch();
 
 	void CheckMovementBooleans(bool CheckWalk, bool CheckRun, bool CheckCrouch);
@@ -40,10 +44,14 @@ public:
 	bool bIsWalking = false;
 	bool bIsSprinting = false;
 	bool bIsCrouching = false;
+
+
+	// Tracing to enable the pickup of local objects 
+	void Trace();
 	
 	// Action Functions
 	void Interact();
-
+	
 
 	
 protected:
